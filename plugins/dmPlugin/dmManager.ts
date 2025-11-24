@@ -126,22 +126,26 @@ async function findAndDMCommenters() {
       'tweet.fields': ['author_id']
     });
     
- if (!mentions.data || (mentions.data as any).length === 0) {
+const mentionsArray: any[] = [];
+if (mentions.tweets && mentions.tweets.length > 0) {
+  mentionsArray.push(...mentions.tweets);
+}
+
+if (mentionsArray.length === 0) {
   console.log('No mentions found');
   return;
 }
-
-const mentionArray = mentions.data as any;
-const commenters = new Set<string>();
-
-for (const mention of mentionArray) {
-  if (mention.author_id && commenters.size < 5) {
-    if (!sentDMs[mention.author_id] && mention.author_id !== userId) {
-      commenters.add(mention.author_id);
-    }
-  }
-}
     
+    const commenters = new Set<string>();
+    
+    for (const mention of mentionsArray) {
+      if (mention.author_id && commenters.size < 5) {
+        if (!sentDMs[mention.author_id] && mention.author_id !== userId) {
+          commenters.add(mention.author_id);
+        }
+      }
+    }
+   
     console.log(`Found ${commenters.size} new commenters to DM`);
     
     // Send DMs
