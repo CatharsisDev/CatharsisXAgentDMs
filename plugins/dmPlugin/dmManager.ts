@@ -164,8 +164,7 @@ if (mentionsArray.length === 0) {
         dailyDMs++;
         saveSentDMs();
         
-        // Rate limit: 2 seconds between DMs
-        await new Promise(resolve => setTimeout(resolve, 60000));
+        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
         
       } catch (error: any) {
         console.error(`Error sending DM to ${commenterId}:`, error.message);
