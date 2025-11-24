@@ -122,7 +122,12 @@ async function findAndDMCommenters() {
     }
     
     const tweets = searchResults.data as any;
-    const randomTweet = tweets[Math.floor(Math.random() * tweets.length)];
+if (!tweets || tweets.length === 0) {
+  console.log('No tweets found from this account');
+  return;
+}
+
+const randomTweet = tweets[Math.floor(Math.random() * tweets.length)];
     
     console.log(`📥 Fetching commenters for tweet ${randomTweet.id}`);
     
