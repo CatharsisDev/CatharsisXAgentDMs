@@ -1,4 +1,3 @@
-import OpenAI from 'openai';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -21,9 +20,9 @@ const twitterClient = new TwitterApi({
   accessSecret: process.env.TWITTER_ACCESS_SECRET!,
 });
 
-const DM_TEMPLATE = `Hey! 👋 Noticed you’re into mindfulness and self-development.
-We’re building something you might vibe with: daily insights, and a new kind of self-growth experience.
-Check out our posts and if you’re curious, we’ve just opened our program for early users of our app (link in our bio). Would love to hear what you think!`;
+const DM_TEMPLATE = `Hey! 👋 Noticed you're into mindfulness and self-development.
+We're building something you might vibe with: daily insights, and a new kind of self-growth experience.
+Check out our posts and if you're curious, we've just opened our program for early users of our app. Would love to hear what you think!`;
 
 function loadSentDMs() {
   try {
@@ -81,10 +80,10 @@ async function findAndDMCommenters() {
     return;
   }
   
-  console.log(`📬 Finding posts to extract commenters from (${dailyDMs}/${MAX_DMS_PER_DAY} DMs today)`);
+  console.log(`📬 Finding commenters to DM (${dailyDMs}/${MAX_DMS_PER_DAY} today)`);
   
   try {
-    // Load target accounts to find their posts
+    // Load target accounts
     const possiblePaths = [
       path.resolve(process.cwd(), 'plugins/dm_target_accounts.json'),
       path.resolve(process.cwd(), 'dm_target_accounts.json'),
@@ -97,6 +96,7 @@ async function findAndDMCommenters() {
       if (fs.existsSync(filePath)) {
         const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
         targetAccounts = data.accounts || [];
+        console.log(`Loaded ${targetAccounts.length} target accounts from ${filePath}`);
         break;
       }
     }
@@ -110,65 +110,53 @@ async function findAndDMCommenters() {
     const randomAccount = targetAccounts[Math.floor(Math.random() * targetAccounts.length)];
     console.log(`🎯 Selected account: ${randomAccount}`);
     
-    // Search for recent posts from this account
-    const searchResults = await twitterClient.v2.search(`from:${randomAccount}`, {
+    // Get user ID
+    const userResponse = await twitterClient.v2.userByUsername(randomAccount);
+    if (!userResponse.data) {
+      console.log('Could not find user');
+      return;
+    }
+    
+    const userId = userResponse.data.id;
+    console.log(`📥 Fetching mentions for user ${userId}`);
+    
+    // Get people who mentioned this user
+    const mentions = await twitterClient.v2.userMentionTimeline(userId, {
       max_results: 10,
       'tweet.fields': ['author_id']
     });
     
-    if (!searchResults.data || (searchResults.data as any).length === 0) {
-      console.log('No tweets found from this account');
-      return;
-    }
-    
-    const tweets = searchResults.data as any;
-if (!tweets || tweets.length === 0) {
-  console.log('No tweets found from this account');
+ if (!mentions.data || (mentions.data as any).length === 0) {
+  console.log('No mentions found');
   return;
 }
 
-const randomTweet = tweets[Math.floor(Math.random() * tweets.length)];
-    
-    console.log(`📥 Fetching commenters for tweet ${randomTweet.id}`);
-    
-    // Get replies to this tweet
-    const replies = await twitterClient.v2.search(`conversation_id:${randomTweet.id}`, {
-      max_results: 20,
-      'tweet.fields': ['author_id']
-    });
-    
-    if (!replies.data || (replies.data as any).length === 0) {
-      console.log('No replies found for this tweet');
-      return;
+const mentionArray = mentions.data as any;
+const commenters = new Set<string>();
+
+for (const mention of mentionArray) {
+  if (mention.author_id && commenters.size < 5) {
+    if (!sentDMs[mention.author_id] && mention.author_id !== userId) {
+      commenters.add(mention.author_id);
     }
-    
-    const replyData = replies.data as any;
-    const commenters = new Set<string>();
-    
-    // Collect unique commenter IDs
-    for (const reply of replyData) {
-      if (reply.author_id && commenters.size < 5) {
-        if (!sentDMs[reply.author_id]) {
-          commenters.add(reply.author_id);
-        }
-      }
-    }
+  }
+}
     
     console.log(`Found ${commenters.size} new commenters to DM`);
     
     // Send DMs
-    for (const userId of commenters) {
+    for (const commenterId of commenters) {
       if (dailyDMs >= MAX_DMS_PER_DAY) {
         console.log(`⏰ Hit daily DM limit (${dailyDMs}/${MAX_DMS_PER_DAY})`);
         break;
       }
       
       try {
-        await twitterClient.v2.sendDmToParticipant(userId, { text: DM_TEMPLATE });
+        await twitterClient.v2.sendDmToParticipant(commenterId, { text: DM_TEMPLATE });
         
-        console.log(`✅ Sent DM to user ${userId}`);
+        console.log(`✅ Sent DM to user ${commenterId}`);
         
-        sentDMs[userId] = Date.now();
+        sentDMs[commenterId] = Date.now();
         dailyDMs++;
         saveSentDMs();
         
@@ -176,7 +164,7 @@ const randomTweet = tweets[Math.floor(Math.random() * tweets.length)];
         await new Promise(resolve => setTimeout(resolve, 2000));
         
       } catch (error: any) {
-        console.error(`Error sending DM to ${userId}:`, error.message);
+        console.error(`Error sending DM to ${commenterId}:`, error.message);
         continue;
       }
     }
