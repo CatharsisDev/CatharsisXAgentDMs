@@ -4,7 +4,7 @@ import * as path from 'path';
 import { dmManager } from './plugins/dmPlugin/dmManager';
 
 const DMS_PER_DAY_TARGET = 60; // Conservative: 60/hour limit
-const DM_INTERVAL = 24 * 60 * 1000; // 24 minutes (60 per day)
+const DM_INTERVAL = 5 * 60 * 1000; // 24 minutes (60 per day)
 
 let lastDMTime = 0;
 let dailyDMs = 0;
