@@ -1,6 +1,6 @@
 {
   "all": [
-    { "handle": "@noots_dev", "description": "" },
-    { "handle": "@xsendnoots", "description": "" }
+    { "userId": "1942576586013958144", "username": "noots_dev", "context": "developer" },
+    { "userId": "1482438206", "username": "xsendnoots", "context": "creator" }
   ]
 }
