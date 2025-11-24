@@ -21,9 +21,9 @@ const twitterClient = new TwitterApi({
   accessSecret: process.env.TWITTER_ACCESS_SECRET!,
 });
 
-const DM_TEMPLATE = `Hey! 👋 Noticed you're into mindfulness and self-development.
-We're building something you might vibe with: daily insights, and a new kind of self-growth experience.
-Check out our posts and if you're curious, we've just opened our program for early users of our app. Would love to hear what you think!`;
+const DM_TEMPLATE = `Hey! 👋 Noticed you’re into mindfulness and self-development.
+We’re building something you might vibe with: daily insights, and a new kind of self-growth experience.
+Check out our posts and if you’re curious, we’ve just opened our program for early users of our app (link in our bio). Would love to hear what you think!`;
 
 function loadSentDMs() {
   try {
