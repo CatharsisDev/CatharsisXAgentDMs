@@ -165,7 +165,7 @@ if (mentionsArray.length === 0) {
         saveSentDMs();
         
         // Rate limit: 2 seconds between DMs
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 60000));
         
       } catch (error: any) {
         console.error(`Error sending DM to ${commenterId}:`, error.message);
