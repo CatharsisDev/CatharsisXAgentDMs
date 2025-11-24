@@ -167,9 +167,9 @@ if (mentionsArray.length === 0) {
         await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
         
       } catch (error: any) {
-        console.error(`Error sending DM to ${commenterId}:`, error.message);
-        continue;
-      }
+  console.error(`Error sending DM to ${commenterId}:`, JSON.stringify(error, null, 2));
+  continue;
+}
     }
     
   } catch (error: any) {
