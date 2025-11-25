@@ -139,7 +139,7 @@ if (mentionsArray.length === 0) {
     const commenters = new Set<string>();
     
     for (const mention of mentionsArray) {
-      if (mention.author_id && commenters.size < 5) {
+      if (mention.author_id && commenters.size < 1) {
         if (!sentDMs[mention.author_id] && mention.author_id !== userId) {
           commenters.add(mention.author_id);
         }
